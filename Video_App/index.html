@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MeetFlow – Video Call App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:"DM Sans",sans-serif;
+  background:#f4f6ff;
+}
+
+/* ===== APP LAYOUT ===== */
+.app-container{
+  display:flex;
+  height:100vh;
+}
+
+/* ===== LEFT NAV ===== */
+.left-side{
+  width:80px;
+  background:#fff;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding-top:20px;
+  box-shadow:2px 0 10px rgba(0,0,0,.05);
+}
+.nav-icon{
+  margin:20px 0;
+  font-size:20px;
+  cursor:pointer;
+}
+
+/* ===== MAIN ===== */
+.app-main{
+  flex:1;
+  padding:20px 32px 24px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+/* ===== TOP BAR (NEW) ===== */
+.top-bar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#fff;
+  padding:14px 20px;
+  border-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.1);
+}
+.app-brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:700;
+  font-size:18px;
+}
+.app-brand span{
+  color:#5a63ff;
+}
+.meeting-info{
+  display:flex;
+  gap:20px;
+  font-size:13px;
+  color:#555;
+}
+.status{
+  color:#16a34a;
+  font-weight:600;
+}
+.invite-btn{
+  background:#5a63ff;
+  color:#fff;
+  border:none;
+  padding:8px 16px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+/* ===== VIDEO GRID ===== */
+.video-call-wrapper{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:20px;
+}
+.video-participant{
+  aspect-ratio:16/10;
+  border-radius:18px;
+  overflow:hidden;
+  position:relative;
+  background:#000;
+  box-shadow:0 16px 40px rgba(0,0,0,.18);
+}
+.video-participant img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.video-participant.active{
+  box-shadow:
+    0 0 0 3px #5a63ff,
+    0 20px 40px rgba(90,99,255,.45);
+}
+.name-tag{
+  position:absolute;
+  bottom:12px;
+  right:12px;
+  background:rgba(0,0,0,.6);
+  color:#fff;
+  font-size:12px;
+  padding:6px 12px;
+  border-radius:12px;
+}
+
+/* ===== CONTROLS ===== */
+.video-call-actions{
+  display:flex;
+  justify-content:center;
+  gap:16px;
+  background:#fff;
+  padding:18px 24px;
+  border-radius:20px;
+  width:fit-content;
+  margin:0 auto;
+  box-shadow:0 12px 30px rgba(0,0,0,.12);
+}
+.control-btn{
+  min-width:52px;
+  height:52px;
+  padding:0 18px;
+  border:none;
+  border-radius:16px;
+  cursor:pointer;
+  font-size:16px;
+  background:#f1f3ff;
+  transition:.2s;
+}
+.control-btn:hover{transform:scale(1.08)}
+.control-btn.active{
+  background:#ffecec;
+  box-shadow:0 0 12px rgba(255,0,0,.4);
+}
+.leave{
+  background:#ff1932;
+  color:#fff;
+  font-weight:600;
+}
+
+/* ===== CHAT ===== */
+.right-side{
+  width:340px;
+  background:#fff;
+  display:flex;
+  flex-direction:column;
+  border-left:1px solid #e6e8f0;
+}
+.chat-header{
+  padding:18px;
+  font-weight:700;
+  border-bottom:1px solid #eee;
+}
+.chat-area{
+  flex:1;
+  padding:16px;
+  overflow-y:auto;
+}
+.message{
+  max-width:75%;
+  padding:10px 14px;
+  border-radius:14px;
+  font-size:13px;
+  margin-bottom:12px;
+  background:#f1f3ff;
+}
+.message.me{
+  background:#5a63ff;
+  color:#fff;
+  margin-left:auto;
+}
+.chat-input-area{
+  display:flex;
+  gap:8px;
+  padding:14px;
+  border-top:1px solid #eee;
+}
+.chat-input{
+  flex:1;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #ccc;
+}
+.send-btn{
+  width:44px;
+  border:none;
+  border-radius:12px;
+  background:#5a63ff;
+  color:#fff;
+  cursor:pointer;
+}
+
+/* ===== MOBILE ===== */
+@media(max-width:900px){
+  .right-side{display:none}
+}
+</style>
+</head>
+
+<body>
+
+<div class="app-container">
+
+  <!-- LEFT -->
+  <div class="left-side">
+    <div class="nav-icon">🏠</div>
+    <div class="nav-icon">💬</div>
+    <div class="nav-icon">📞</div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="app-main">
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <div class="app-brand">
+        🎥 <span>MeetFlow</span>
+      </div>
+      <div class="meeting-info">
+        <div class="status">● Live</div>
+        <div>6 Participants</div>
+        <div>🔒 Encrypted</div>
+      </div>
+      <button class="invite-btn">Invite</button>
+    </div>
+
+    <!-- VIDEO GRID -->
+    <div class="video-call-wrapper">
+      <div class="video-participant"><img src="https://images.unsplash.com/photo-1500917293891-ef795e70e1f6?q=70"><div class="name-tag">Emmy</div></div>
+      <div class="video-participant"><img src="https://images.unsplash.com/photo-1566821582776-92b13ab46bb4?q=70"><div class="name-tag">Andy</div></div>
+      <div class="video-participant"><img src="https://images.unsplash.com/photo-1576110397661-64a019d88a98?q=70"><div class="name-tag">Tim</div></div>
+      <div class="video-participant"><img src="https://images.unsplash.com/photo-1600207438283-a5de6d9df13e?q=70"><div class="name-tag">Jessica</div></div>
+      <div class="video-participant"><img src="https://images.unsplash.com/photo-1542596594-649edbc13630?q=70"><div class="name-tag">Tina</div></div>
+      <div class="video-participant"><img src="https://images.unsplash.com/photo-1581824283135-0666cf353f35?q=70"><div class="name-tag">Ryan</div></div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="video-call-actions">
+      <button class="control-btn mic">🎙</button>
+      <button class="control-btn cam">📷</button>
+      <button class="control-btn leave">Leave</button>
+    </div>
+
+  </div>
+
+  <!-- CHAT -->
+  <div class="right-side">
+    <div class="chat-header">Live Chat</div>
+    <div class="chat-area"></div>
+    <div class="chat-input-area">
+      <input class="chat-input" placeholder="Type message...">
+      <button class="send-btn">➤</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+$(function(){
+  setInterval(()=>{
+    $('.video-participant').removeClass('active');
+    const count=$('.video-participant').length;
+    $('.video-participant').eq(Math.floor(Math.random()*count)).addClass('active');
+  },2500);
+
+  $('.mic,.cam').click(function(){
+    $(this).toggleClass('active');
+  });
+
+  $('.send-btn').click(()=>{
+    const txt=$('.chat-input').val().trim();
+    if(!txt)return;
+    $('.chat-area').append(`<div class="message me">${txt}</div>`);
+    $('.chat-input').val('');
+    setTimeout(()=>{
+      $('.chat-area').append(`<div class="message">Nice 👍</div>`);
+      $('.chat-area').scrollTop(99999);
+    },1200);
+  });
+});
+</script>
+
+</body>
+</html>
